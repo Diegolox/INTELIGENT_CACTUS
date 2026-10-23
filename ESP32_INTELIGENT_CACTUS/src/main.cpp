@@ -4,7 +4,7 @@
 
 const char* WIFI_SSID = "PCDEDIEGO 7252";
 const char* WIFI_PASSWORD = "5245R@3d";
-const char* PC_IP = "192.168.1.100"; // IPv4 del ordenador
+const char* PC_IP = "192.168.137.1"; // IPv4 del ordenador
 const int PUERTO = 5000;
 
 WiFiClient cliente;
