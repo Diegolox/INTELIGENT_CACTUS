@@ -15,7 +15,7 @@ SENSOR_POSITIONS = {
 }
 
 class MainView:
-    def __init__(self, root, on_demo, on_clear):
+    def __init__(self, root, on_demo, on_clear, button_texts):
         asset = Path(__file__).resolve().parents[2] / 'assets' / 'cactus-limon-pastel.png'
         # Ajuste de encuadre solo en memoria: se conserva intacto el PNG original.
         with Image.open(asset) as source:
@@ -32,7 +32,7 @@ class MainView:
         self.status = ConnectionIndicator(root)
         self.status.place(x=18, y=T['height'] - 34)
         self.panel = DataPanel(root, SENSOR_POSITIONS)
-        self.demo_button = AppButton(root, text='Demo', command=on_demo, width=120)
+        self.demo_button = AppButton(root, text=button_texts['demo'], command=on_demo, width=120)
         self.demo_button.place(x=202, y=T['height'] - 82)
-        self.clear_button = AppButton(root, text='Limpiar', command=on_clear, width=120, variant='secondary')
+        self.clear_button = AppButton(root, text=button_texts['clear'], command=on_clear, width=120, variant='secondary')
         self.clear_button.place(x=338, y=T['height'] - 82)

@@ -28,3 +28,7 @@ Cabecera y lecturas comparten AppPanel. Botones, entradas y cajas multilínea us
 ## Cabecera e indicador
 
 Título sin contenedor: «Inteligent CACTUS». Indicador discreto abajo a la izquierda, círculo antes del texto: amarillo en espera o sin estado verificable, verde conectado y rojo tras desconexión. Botones de silueta ovalada, sin borde: acción principal verde medio y secundaria verde pastel algo más intenso. Mantienen tipografía y gama de color; se diferencian de los lectores rectangulares con borde.
+
+## Icono suavizado de Windows
+
+Icono activo: `assets/cactus-smooth.ico`, generado desde `cactus-smooth.png` con transparencia. Contornos suaves y tamaños nativos 16, 20, 24, 32, 40, 48, 64, 96, 128 y 256. `assets/cactus.ico` conserva una copia actualizada para compatibilidad. Se mantiene el pixel art anterior como referencia.
