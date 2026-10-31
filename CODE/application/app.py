@@ -1,13 +1,13 @@
 """Gestión de alto nivel, independiente de network/."""
 from queue import Queue,Empty
 import sys
-from pathlib import Path
+from paths import ASSETS_DIR
 import customtkinter as ctk
-import button_actions
-from styles.theme import THEME as T
+from application import actions
+from ui.theme import THEME as T
 from ui.layout import MainView
-from interface_values import interface_values
-from receiver_monitor import ReceiverMonitor
+from application.readings import interface_values
+from network.monitor import ReceiverMonitor
 class App(ctk.CTk):
     def __init__(self, values=None):
         ctk.set_appearance_mode('light')
@@ -19,7 +19,7 @@ class App(ctk.CTk):
             ctypes.windll.shcore.SetProcessDpiAwareness(2)
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('InteligentCactus.Desktop')
         super().__init__()
-        icon = Path(__file__).resolve().parents[1] / 'assets' / 'cactus-smooth.ico'
+        icon = ASSETS_DIR / 'cactus-smooth.ico'
         if sys.platform == 'win32':
             self.iconbitmap(str(icon))
         self.title('Inteligent Cactus')
@@ -35,7 +35,7 @@ class App(ctk.CTk):
             self,
             lambda: self.run_button_action('connect'),
             lambda: self.run_button_action('clear'),
-            button_texts={key: item['text'] for key, item in button_actions.BUTTONS.items()},
+            button_texts={key: item['text'] for key, item in actions.BUTTONS.items()},
         )
         self._render_values()
         # Centrar con las dimensiones físicas después de aplicar el DPI nativo.
@@ -47,7 +47,7 @@ class App(ctk.CTk):
         self._poll_id=self.after(150,self._poll)
     def run_button_action(self, button_id):
         try:
-            return button_actions.execute(button_id, self)
+            return actions.execute(button_id, self)
         finally:
             self._render_values()
 
@@ -84,9 +84,7 @@ class App(ctk.CTk):
             return
         self._last_values_version = version
         self.view.panel.update_values(values, timestamp.strftime('%H:%M:%S') if timestamp else '—')
-        if source == 'demo':
-            self.view.panel.updated.configure(text='Demo · datos simulados')
-        elif source in ('clear', 'initial'):
+        if source in ('clear', 'initial'):
             self.view.panel.updated.configure(text='')
 
     def _poll(self):
@@ -103,10 +101,6 @@ class App(ctk.CTk):
             self.view.set_connection_state(state, active=self.receiver_monitor is not None)
         self._render_values()
         self._poll_id=self.after(150,self._poll)
-
-    def show_demo(self):
-        self.values.demo()
-        self._render_values()
 
     def clear_readings(self):
         self.values.clear()

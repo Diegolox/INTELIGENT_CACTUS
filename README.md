@@ -29,25 +29,23 @@
 
 ### Arquitectura de la app
 
-<!-- Sustituir este recuadro por la imagen exportada de Canva. -->
-<table>
-<tr><td align="center" width="660">
-<br><br>
-<strong>Espacio reservado para el esquema de arquitectura</strong>
-<br><br><br>
-</td></tr>
-</table>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/diagramas/estructura-app-claro.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/diagramas/estructura-app-oscuro.svg">
+  <img src="assets/diagramas/estructura-app-oscuro.svg" alt="Estructura de archivos de la aplicación Python" width="100%">
+</picture>
+
+<p align="justify"><code>application/</code> organiza la lógica y las lecturas; <code>network/</code> recibe y guarda los datos; <code>ui/</code> contiene la pantalla y sus estilos. La documentación técnica está en <code>docs/</code>.</p>
 
 ### Conexión Wi-Fi
 
-<!-- Sustituir este recuadro por la imagen exportada de Canva. -->
-<table>
-<tr><td align="center" width="660">
-<br><br>
-<strong>Espacio reservado para el esquema de conexión Wi-Fi</strong>
-<br><br><br>
-</td></tr>
-</table>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/diagramas/conexion-wifi-claro.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/diagramas/conexion-wifi-oscuro.svg">
+  <img src="assets/diagramas/conexion-wifi-oscuro.svg" alt="El PC crea la Wi-Fi, el ESP32 envia JSON y la app recibe y guarda las medidas" width="100%">
+</picture>
+
+<p align="justify">El ESP32 es el cliente y la app del PC es el servidor TCP. El botón <strong>Conectar ESP32</strong> activa la escucha del receptor; el ESP32 inicia la conexión y envía las medidas.</p>
 
 ## Software necesario
 
@@ -64,12 +62,12 @@
 
 ## Un poco de código
 
-<p align="justify">En el ESP32, <code>initWifi()</code> conecta a la red, <code>generarMedida()</code> crea los datos y <code>enviarMedida()</code> los transmite. En Python, <code>receiver_monitor.py</code> entrega las lecturas a <code>submit_readings()</code> para actualizar la pantalla.</p>
+<p align="justify">En el ESP32, <code>initWifi()</code> conecta a la red, <code>generarMedida()</code> crea los datos y <code>enviarMedida()</code> los transmite. En Python, <code>network/monitor.py</code> entrega las lecturas a <code>submit_readings()</code> para actualizar la pantalla.</p>
 
 <details>
 <summary>Ver Python: interpretar y guardar una medida</summary>
 
-Fragmento de `recibir.py`, ejecutado por cada línea recibida:
+Fragmento de `CODE/network/receiver.py`, ejecutado por cada línea recibida:
 
 ```python
 # Convertir el JSON recibido en un diccionario de Python.
@@ -84,6 +82,6 @@ with archivo.open("x", encoding="utf-8") as fichero:
     json.dump(datos, fichero, indent=4, ensure_ascii=False)
 ```
 
-<p align="justify"><code>json.loads()</code> interpreta el mensaje y <code>json.dump()</code> escribe sus datos en el archivo. La carpeta <code>medidas/</code> se crea automáticamente junto al receptor.</p>
+<p align="justify"><code>json.loads()</code> interpreta el mensaje y <code>json.dump()</code> escribe sus datos en el archivo. La carpeta <code>medidas/</code> se crea automáticamente en la raíz del proyecto o junto al ejecutable.</p>
 
 </details>

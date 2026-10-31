@@ -1,8 +1,8 @@
 """Ventana vertical: imagen central grande y valores a ambos lados."""
-from pathlib import Path
+from paths import ASSETS_DIR
 import customtkinter as ctk
 from PIL import Image, ImageOps
-from styles.theme import THEME as T
+from ui.theme import THEME as T
 from ui.components import AppLabel, AppButton, ConnectionIndicator
 from ui.data_panel import DataPanel
 
@@ -16,7 +16,7 @@ SENSOR_POSITIONS = {
 
 class MainView:
     def __init__(self, root, on_connect, on_clear, button_texts):
-        asset = Path(__file__).resolve().parents[2] / 'assets' / 'cactus-limon-pastel.png'
+        asset = ASSETS_DIR / 'cactus-limon-pastel.png'
         # Ajuste de encuadre solo en memoria: se conserva intacto el PNG original.
         with Image.open(asset) as source:
             display = ImageOps.fit(source.convert('RGB'), (T['width'] * 2, T['height'] * 2),

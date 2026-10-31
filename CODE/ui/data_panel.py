@@ -1,6 +1,6 @@
 import customtkinter as ctk
-from styles.theme import THEME as T
-from ui.components import AppLabel,DataValue
+from ui.theme import THEME as T
+from ui.components import AppLabel
 SENSORS=(
 ('soil_moisture','Humedad del sustrato','%','Agua presente en la tierra'),
 ('air_temperature','Temperatura ambiente','°C','Temperatura alrededor del cactus'),

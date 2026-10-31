@@ -1,10 +1,10 @@
 """Carga de iconos externos transparentes, independiente del directorio de ejecución."""
 from functools import lru_cache
-from pathlib import Path
+from paths import ASSETS_DIR
 from PIL import Image
 import customtkinter as ctk
 
-ICON_DIRECTORY = Path(__file__).resolve().parents[2] / 'assets' / 'icons'
+ICON_DIRECTORY = ASSETS_DIR / 'icons'
 ICON_NAMES = {'temperature', 'humidity', 'light'}
 
 @lru_cache(maxsize=3)

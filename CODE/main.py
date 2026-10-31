@@ -1,12 +1,10 @@
-"""Entrada de la app y del receptor cuando se distribuye como ejecutable."""
+"""Entrada unica de la app y de su receptor en segundo plano."""
 import sys
-from pathlib import Path
-import runpy
 
 if __name__ == '__main__':
     if '--receptor' in sys.argv:
-        carpeta = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(__file__).resolve().parent.parent
-        runpy.run_path(str(carpeta / 'recibir.py'), run_name='__main__')
+        from network.receiver import recibir
+        recibir()
     else:
-        from app import App
+        from application.app import App
         App().mainloop()

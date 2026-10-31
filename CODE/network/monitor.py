@@ -1,4 +1,4 @@
-"""Inicia recibir.py y pasa su estado y sus medidas a la app."""
+"""Inicia el receptor y pasa su estado y sus medidas a la app."""
 import os
 import json
 from pathlib import Path
@@ -22,14 +22,13 @@ class ReceiverMonitor:
         self.stop()
         self._stopping = threading.Event()
         if getattr(sys, 'frozen', False):
-            receiver = Path(sys.executable).parent / 'recibir.py'
             command = [sys.executable, '--receptor']
         else:
-            receiver = Path(__file__).resolve().parent.parent / 'recibir.py'
-            command = [sys.executable, '-u', str(receiver)]
+            main = Path(__file__).resolve().parents[1] / 'main.py'
+            command = [sys.executable, '-u', str(main), '--receptor']
         try:
             self.process = subprocess.Popen(
-                command, cwd=str(receiver.parent),
+                command,
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                 text=True, encoding='utf-8', errors='replace',
                 env={**os.environ, 'PYTHONIOENCODING': 'utf-8'},

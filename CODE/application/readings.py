@@ -1,9 +1,4 @@
-"""Valores de la interfaz, editables sin depender de CustomTkinter.
-
-Edita INITIAL_VALUES para cambiar el arranque. Desde otro fichero del mismo
-programa importa set_values o set_value para actualizar las lecturas en vivo.
-None muestra una raya. No modifica la conexión ni el receptor.
-"""
+"""Estado compartido de las cinco lecturas, seguro para varios hilos."""
 from datetime import datetime
 import math
 from threading import Lock
@@ -16,15 +11,6 @@ INITIAL_VALUES = {
     'soil_moisture': None,     # Hum. Sus.  · %
     'light': None,             # Luz        · lx
 }
-
-DEMO_VALUES = {
-    'air_temperature': 24.6,
-    'air_humidity': 42,
-    'soil_temperature': 22.8,
-    'soil_moisture': 18,
-    'light': 12500,
-}
-
 
 class InterfaceValues:
     """Estado compartido seguro para la interfaz y los hilos del receptor."""
@@ -67,8 +53,6 @@ class InterfaceValues:
     def clear(self):
         self.update({}, replace=True, source='clear')
 
-    def demo(self):
-        self.update(DEMO_VALUES, replace=True, source='demo')
 
 
 # La app usa esta instancia por defecto. No se crea ninguna ventana al importar.
@@ -76,12 +60,12 @@ interface_values = InterfaceValues()
 
 
 def set_values(**values):
-    """Ejemplo: set_values(air_temperature=25.2, air_humidity=43)."""
+    """Actualiza varias lecturas del estado compartido."""
     interface_values.update(values)
 
 
 def set_value(sensor, value):
-    """Ejemplo: set_value('light', 9800)."""
+    """Actualiza una sola lectura."""
     interface_values.update({sensor: value})
 
 

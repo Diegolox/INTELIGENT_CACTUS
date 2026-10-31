@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from styles.theme import THEME as T, font
+from ui.theme import THEME as T, font
 class AppLabel(ctk.CTkLabel):
     def __init__(self,master,text='',size=14,muted=False,weight='normal',**kw):
         super().__init__(master,text=text,font=font(size,weight),text_color=T['muted' if muted else 'text'],**kw)
@@ -43,33 +43,6 @@ class ConnectionIndicator(ctk.CTkFrame):
         self.state = state
         self.dot.configure(fg_color=T[color])
         self.label.configure(text=text if message is None else message)
-
-class AppEntry(ctk.CTkEntry):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, font=(T['value_font'], 14), height=38,
-                         fg_color=T['sensor_background'], text_color=T['sensor_text'],
-                         border_color=T['sensor_border'], border_width=T['sensor_border_width'],
-                         corner_radius=T['sensor_radius'], **kwargs)
-
-class AppTextbox(ctk.CTkTextbox):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, font=font(), fg_color=T['sensor_background'],
-                         text_color=T['sensor_text'], border_width=T['sensor_border_width'],
-                         border_color=T['sensor_border'], corner_radius=T['sensor_radius'], **kwargs)
-
-class DataValue(ctk.CTkFrame):
-    def __init__(self,master,name,unit,description):
-        super().__init__(master,fg_color='transparent')
-        self.unit=unit
-        self.grid_columnconfigure(0,weight=1)
-        AppLabel(self,name).grid(row=0,column=0,sticky='w',pady=(6,0))
-        AppLabel(self,description,size=12,muted=True).grid(row=1,column=0,sticky='w',pady=(0,7))
-        self.value=AppLabel(self,'—',size=25)
-        self.value.grid(row=0,column=1,rowspan=2,sticky='e',padx=(12,0))
-        ctk.CTkFrame(self,height=1,fg_color=T['line']).grid(row=2,column=0,columnspan=2,sticky='ew')
-    def set_value(self,value):
-        self.value.configure(text='—' if value is None else f'{value:g} {self.unit}')
-
 
 class SensorBox(AppPanel):
     """Lectura horizontal de solo lectura, inspirada en un instrumento."""
