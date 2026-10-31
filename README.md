@@ -37,16 +37,6 @@
 
 <p align="justify"><code>application/</code> organiza la lógica y las lecturas; <code>network/</code> recibe y guarda los datos; <code>ui/</code> contiene la pantalla y sus estilos. La documentación técnica está en <code>docs/</code>.</p>
 
-### Conexión Wi-Fi
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/diagramas/conexion-wifi-claro.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/diagramas/conexion-wifi-oscuro.svg">
-  <img src="assets/diagramas/conexion-wifi-oscuro.svg" alt="El PC crea la Wi-Fi, el ESP32 envia JSON y la app recibe y guarda las medidas" width="100%">
-</picture>
-
-<p align="justify">El ESP32 es el cliente y la app del PC es el servidor TCP. El botón <strong>Conectar ESP32</strong> activa la escucha del receptor; el ESP32 inicia la conexión y envía las medidas.</p>
-
 ## Software necesario
 
 - **Python 3.11**, versión utilizada en el proyecto.
