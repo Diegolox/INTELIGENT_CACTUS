@@ -21,10 +21,15 @@ class ReceiverMonitor:
             return
         self.stop()
         self._stopping = threading.Event()
-        receiver = Path(__file__).resolve().parent.parent / 'recibir.py'
+        if getattr(sys, 'frozen', False):
+            receiver = Path(sys.executable).parent / 'recibir.py'
+            command = [sys.executable, '--receptor']
+        else:
+            receiver = Path(__file__).resolve().parent.parent / 'recibir.py'
+            command = [sys.executable, '-u', str(receiver)]
         try:
             self.process = subprocess.Popen(
-                [sys.executable, '-u', str(receiver)], cwd=str(receiver.parent),
+                command, cwd=str(receiver.parent),
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                 text=True, encoding='utf-8', errors='replace',
                 env={**os.environ, 'PYTHONIOENCODING': 'utf-8'},

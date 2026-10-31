@@ -8,9 +8,9 @@
 
 ## La aplicación
 
-<p align="justify">La interfaz está desarrollada en <strong>Python con CustomTkinter</strong>. Muestra temperatura ambiente y del suelo, humedad ambiente y del suelo, iluminación y la hora de la última medida.</p>
+<p align="justify">La interfaz está desarrollada en <strong>Python con CustomTkinter</strong>. Muestra temperatura ambiente y del suelo, humedad ambiente y del suelo, iluminación y la hora de la última medida. Algunas de las implementaciones en la aplicación son las siguientes</p>
 
-- **Conectar ESP32 / Desconectar:** activa o detiene el receptor. Al aceptar la conexión del ESP32, la app lo detecta y actualiza el indicador.
+- **Pulsador conectar ESP32 / Desconectar:** activa o detiene el receptor. Al aceptar la conexión del ESP32, la app lo detecta y actualiza el indicador.
 - **Círculo y aviso:** amarillo en espera, verde conectado y rojo desconectado o con error.
 - **Limpiar:** vacía la pantalla sin desconectar ni borrar los archivos guardados.
 - **Guardado automático:** crea un JSON por medida en `medidas/`, con fecha y hora.
@@ -19,7 +19,7 @@
 
 ## Funcionamiento y esquemas
 
-<p align="justify">El PC crea un punto de acceso Wi-Fi y el ESP32 se une a esa red. Al pulsar <strong>Conectar ESP32</strong>, el PC empieza a escuchar en el puerto TCP <code>5000</code>; el ESP32 inicia la conexión y envía un JSON por línea.</p>
+<p align="justify">El PC crea un punto de acceso Wi-Fi y el ESP32 se conecta a esa red. Al pulsar <strong>Conectar ESP32</strong>, el PC empieza a escuchar en el puerto TCP <code>5000</code> mientras el ESP32 inicia la conexión y envía un JSON por línea.</p>
 
 ```json
 {"ta":24.3,"ts":21.8,"ha":60.5,"hs":35.2,"luz":123456}
@@ -55,7 +55,7 @@
 - **CustomTkinter y Pillow**, dependencias de la interfaz recogidas en `CODE/requirements.txt`.
 - **PlatformIO con framework Arduino y ArduinoJson 7**, para compilar y cargar el programa del ESP32.
 
-## Hardware necesario
+## Hardware utilizado
 
 - **ESP32 WROOM**, compatible con la placa configurada en `platformio.ini`.
 - **Adaptador Wi-Fi del PC con punto de acceso en 2,4 GHz**, compatible con el ESP32.
