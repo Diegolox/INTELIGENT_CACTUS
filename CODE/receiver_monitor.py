@@ -1,5 +1,6 @@
-"""Observa el receptor existente sin importar ni modificar network/receiver.py."""
+"""Inicia recibir.py y pasa su estado y sus medidas a la app."""
 import os
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -7,16 +8,23 @@ import threading
 
 
 class ReceiverMonitor:
-    def __init__(self, on_state):
+    def __init__(self, on_state, on_readings=None):
         self.on_state = on_state
+        self.on_readings = on_readings
         self.process = None
         self._stopping = threading.Event()
+        self._thread = None
 
     def start(self):
-        receiver = Path(__file__).resolve().parent / 'network' / 'receiver.py'
+        # Una pulsacion repetida nunca debe abrir dos receptores.
+        if self.process is not None and self.process.poll() is None:
+            return
+        self.stop()
+        self._stopping = threading.Event()
+        receiver = Path(__file__).resolve().parent.parent / 'recibir.py'
         try:
             self.process = subprocess.Popen(
-                [sys.executable, '-u', str(receiver)], cwd=str(receiver.parent.parent),
+                [sys.executable, '-u', str(receiver)], cwd=str(receiver.parent),
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                 text=True, encoding='utf-8', errors='replace',
                 env={**os.environ, 'PYTHONIOENCODING': 'utf-8'},
@@ -25,14 +33,17 @@ class ReceiverMonitor:
         except OSError:
             self.on_state('unavailable')
             return
-        threading.Thread(target=self._read, daemon=True).start()
+        self._thread = threading.Thread(
+            target=self._read, args=(self.process, self._stopping), daemon=True)
+        self._thread.start()
 
-    def _read(self):
+    def _read(self, process, stopping):
         connected = False
-        with self.process.stdout as output:
+        with process.stdout as output:
             for line in output:
-                if self._stopping.is_set():
+                if stopping.is_set():
                     return
+                print(line.rstrip(), flush=True)
                 if line.startswith('ESP32 conectado:'):
                     connected = True
                     self.on_state('connected')
@@ -40,8 +51,21 @@ class ReceiverMonitor:
                     self.on_state('disconnected')
                 elif line.startswith('Esperando al ESP32'):
                     self.on_state('waiting')
-        self.process.wait()
-        if not self._stopping.is_set():
+                elif line.startswith('Datos recibidos: ') and self.on_readings:
+                    try:
+                        datos = json.loads(line.removeprefix('Datos recibidos: '))
+                        # Traducimos las claves del ESP32 a las claves de la app.
+                        self.on_readings({
+                            'air_temperature': datos['ta'],
+                            'soil_temperature': datos['ts'],
+                            'air_humidity': datos['ha'],
+                            'soil_moisture': datos['hs'],
+                            'light': datos['luz'],
+                        })
+                    except (ValueError, KeyError, TypeError) as error:
+                        print('Medida no valida para la app:', error, flush=True)
+        process.wait()
+        if not stopping.is_set():
             self.on_state('disconnected' if connected else 'unavailable')
 
     def stop(self):
@@ -53,3 +77,7 @@ class ReceiverMonitor:
             except subprocess.TimeoutExpired:
                 self.process.kill()
                 self.process.wait(timeout=2)
+
+        # Esperar al lector evita callbacks de una conexion que ya se ha cerrado.
+        if self._thread is not None and self._thread is not threading.current_thread():
+            self._thread.join(timeout=2)

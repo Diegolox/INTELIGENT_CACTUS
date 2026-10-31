@@ -23,26 +23,26 @@ class AppButton(ctk.CTkButton):
 class ConnectionIndicator(ctk.CTkFrame):
     """Estado del enlace ESP32, independiente de los datos de demostración."""
     STATES = {
-        'waiting': ('En espera', 'status_waiting'),
+        'waiting': ('Esperando ESP32', 'status_waiting'),
         'connected': ('Conectado', 'status_connected'),
         'disconnected': ('Desconectado', 'status_disconnected'),
-        'unavailable': ('Sin estado', 'status_waiting'),
+        'unavailable': ('Error de conexión', 'status_disconnected'),
     }
 
     def __init__(self, master):
-        super().__init__(master, width=150, height=24, fg_color='transparent')
+        super().__init__(master, height=24, fg_color='transparent')
         self.dot = ctk.CTkFrame(self, width=9, height=9, corner_radius=5,
                                fg_color=T['status_waiting'])
-        self.dot.place(x=0, y=8)
+        self.dot.pack(side='left', padx=(0, 8))
         self.label = AppLabel(self, '', size=11, muted=True, height=24)
-        self.label.place(x=17, y=0)
-        self.set_state('waiting')
+        self.label.pack(side='left')
+        self.set_state('disconnected')
 
-    def set_state(self, state):
+    def set_state(self, state, message=None):
         text, color = self.STATES[state]
         self.state = state
         self.dot.configure(fg_color=T[color])
-        self.label.configure(text=text)
+        self.label.configure(text=text if message is None else message)
 
 class AppEntry(ctk.CTkEntry):
     def __init__(self, master, **kwargs):
@@ -84,13 +84,13 @@ class SensorBox(AppPanel):
         self.symbol.place(x=8, y=19)
         self.name = ctk.CTkLabel(self, text=name if name.endswith('.') else f'{name}:',
                                 font=(T['sensor_font'], T['sensor_label_size'], 'bold'),
-                                text_color=T['sensor_text'], width=69 if kind == 'light' else 76,
+                                text_color=T['sensor_text'], width=42 if kind == 'light' else 76,
                                 height=28, anchor='w')
         self.name.place(x=36, y=17)
         self.value = ctk.CTkLabel(self, text='—', font=(T['value_font'], T['sensor_value_size']),
-                                 text_color=T['sensor_value'], width=42 if kind == 'light' else 37,
+                                 text_color=T['sensor_value'], width=72 if kind == 'light' else 37,
                                  height=28, anchor='e')
-        self.value.place(x=110 if kind == 'light' else 115, y=17)
+        self.value.place(x=78 if kind == 'light' else 115, y=17)
         self.unit_label = ctk.CTkLabel(self, text=unit, font=(T['sensor_font'], 12),
                                       text_color=T['sensor_text'], width=16, height=28, anchor='w')
         self.unit_label.place(x=154, y=17)

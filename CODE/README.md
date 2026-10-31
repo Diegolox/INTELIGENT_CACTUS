@@ -41,24 +41,26 @@ Los cambios en memoria no se guardan al cerrar la app. Ejecutar un segundo proce
 
 `app.submit_readings(diccionario)` sigue disponible. Mantiene su comportamiento de paquete completo: los campos ausentes se limpian. Opcionalmente se puede pasar una instancia independiente de `InterfaceValues` al constructor `App(values=...)`.
 
-## Cambiar las funciones de los botones
+## Botones y estado de conexion
 
-Edita `button_actions.py`. `on_demo(app)` y `on_clear(app)` son las funciones de ejemplo; puedes sustituir su contenido por llamadas a tu propio código. En `BUTTONS` se cambia tanto el texto de cada botón como la función asignada. Usa el nombre de la función sin paréntesis.
+La app arranca desconectada. Activa primero el punto de acceso Wi-Fi del PC.
 
-```python
-def mi_accion(app):
-    # Conserva las demás lecturas y actualiza estas dos.
-    app.values.update({'air_temperature': 26.5, 'light': 9000})
+- **Conectar ESP32** abre el receptor TCP en el puerto 5000. El ESP32 se conecta
+  automaticamente cuando detecta que el receptor esta disponible.
+- **Desconectar** cierra el receptor y libera el puerto. Se conservan las ultimas
+  lecturas y los archivos guardados. Puedes volver a conectar con el mismo boton.
+- **Limpiar** borra las lecturas de la pantalla. No desconecta ni borra los JSON;
+  la siguiente medida recibida vuelve a aparecer.
 
-BUTTONS = {
-    'demo': {'text': 'Actualizar', 'action': mi_accion},
-    'clear': {'text': 'Limpiar', 'action': on_clear},
-}
-```
+El circulo indica el estado real del enlace: rojo desconectado o error, amarillo
+esperando al ESP32, verde conectado. Un fallo al abrir el puerto se muestra en la
+pantalla y en la terminal; cierra cualquier receptor independiente y reintenta.
+Si el ESP32 pierde la conexion, el receptor sigue esperando para reconectarlo.
 
-Mantén las claves `demo` y `clear`, que corresponden a los dos botones existentes. La función recibe la app abierta y la pantalla se refresca después de ejecutarla. Si tu función no recibe argumentos, llámala desde una función envolvente: `def on_demo(app): mi_funcion()`.
-
-Las acciones se ejecutan en el hilo de la interfaz. Las operaciones de red o cálculos que tarden deben ir en un hilo de trabajo; desde ese hilo se puede actualizar `app.values`, pero no manipular widgets. Para cambiar textos o código fuente, reinicia la app. Una reasignación de `BUTTONS['demo']['action']` desde otro módulo del mismo programa se aplica en la siguiente pulsación.
+Los botones se definen en `button_actions.py`, con las claves `connect` y `clear`.
+Cada funcion recibe la app abierta; no crees otra ventana dentro de una accion.
+La demostracion sigue disponible por codigo con `app.show_demo()` o
+`app.values.demo()`, pero ya no ocupa un boton de la pantalla.
 
 ## Archivos
 
@@ -71,10 +73,27 @@ Las acciones se ejecutan en el hilo de la interfaz. Las operaciones de red o cá
 - `ui/components.py`: componentes reutilizables.
 - `ui/data_panel.py`: cinco sensores y su presentación.
 - `styles/theme.json` y `STYLES.md`: estilos.
-- `receiver_monitor.py`: observa los estados del receptor existente.
+- `receiver_monitor.py`: inicia el receptor y pasa el estado y las lecturas a la app.
 
 ## Enlace ESP32
 
-Al abrir, la app inicia `network/receiver.py` como proceso independiente y observa sus mensajes de conexión, sin modificar ese archivo. El indicador es amarillo en espera o sin estado verificable, verde cuando acepta el ESP32 y rojo cuando se cierra el enlace TCP. No inspecciona directamente la asociación Wi-Fi. Demo y Limpiar no cambian su estado. La app cierra únicamente el receptor que ella misma inicia.
+1. Activa el punto de acceso Wi-Fi del PC y carga el firmware del ESP32.
+2. Cierra cualquier receptor que hayas ejecutado por separado.
+3. Desde la raiz del proyecto ejecuta `python CODE/main.py`.
+4. Pulsa **Conectar ESP32**.
 
-Esta integración observa la conexión; el mapeo de los mensajes de red a las cinco lecturas queda en el código del receptor. Las nuevas funciones no modifican ese protocolo.
+Al pulsar Conectar ESP32, la app inicia `recibir.py`, muestra en la terminal el proceso de
+conexion y los datos, y actualiza las cinco lecturas con `App.submit_readings()`.
+El indicador muestra el estado del enlace TCP, no la asociacion Wi-Fi.
+No ejecutes `recibir.py` a la vez que la app: ambos usan el puerto 5000.
+
+El ESP32 envia un JSON por linea cada dos segundos con las claves `ta`, `ts`,
+`ha`, `hs` y `luz`. Los valores actuales son simulados y varian ligeramente.
+`receiver_monitor.py` traduce esas claves a `air_temperature`, `soil_temperature`,
+`air_humidity`, `soil_moisture` y `light`. Las lecturas se actualizan en el estado
+compartido; la propia app refresca la pantalla desde el hilo de la interfaz.
+
+Cada JSON recibido se guarda con fecha y hora en `medidas`, junto a `recibir.py`.
+Cerrar la app detiene el receptor que ella inicio y libera el puerto.
+`python recibir.py` sigue disponible para recibir y guardar sin abrir la ventana.
+`CODE/network/receiver.py` tambien ejecuta ese mismo receptor, sin duplicar codigo.

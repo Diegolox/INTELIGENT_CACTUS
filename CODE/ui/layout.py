@@ -15,7 +15,7 @@ SENSOR_POSITIONS = {
 }
 
 class MainView:
-    def __init__(self, root, on_demo, on_clear, button_texts):
+    def __init__(self, root, on_connect, on_clear, button_texts):
         asset = Path(__file__).resolve().parents[2] / 'assets' / 'cactus-limon-pastel.png'
         # Ajuste de encuadre solo en memoria: se conserva intacto el PNG original.
         with Image.open(asset) as source:
@@ -30,9 +30,22 @@ class MainView:
         AppLabel(root, 'Inteligent CACTUS', size=25, weight='bold', height=36).place(
             relx=0.5, y=37, anchor='n')
         self.status = ConnectionIndicator(root)
-        self.status.place(x=18, y=T['height'] - 34)
+        self.status.place(relx=1.0, x=-18, y=T['height'] - 34, anchor='ne')
         self.panel = DataPanel(root, SENSOR_POSITIONS)
-        self.demo_button = AppButton(root, text=button_texts['demo'], command=on_demo, width=120)
-        self.demo_button.place(x=202, y=T['height'] - 82)
-        self.clear_button = AppButton(root, text=button_texts['clear'], command=on_clear, width=120, variant='secondary')
-        self.clear_button.place(x=338, y=T['height'] - 82)
+        self.panel.updated.place_configure(relx=0, x=18, anchor='nw')
+        self.connection_button = AppButton(root, text=button_texts['connect'], command=on_connect, width=144)
+        self.connection_button.place(x=184, y=T['height'] - 82)
+        self.clear_button = AppButton(root, text=button_texts['clear'], command=on_clear, width=128, variant='secondary')
+        self.clear_button.place(x=344, y=T['height'] - 82)
+
+        self.set_connection_state('disconnected', active=False)
+
+    def set_connection_state(self, state, *, active):
+        self.connection_button.configure(text='Desconectar' if active else 'Conectar ESP32')
+        messages = {
+            'disconnected': 'Activa la Wi-Fi del PC y conecta.',
+            'waiting': 'Esperando la conexión del ESP32...',
+            'connected': 'Medidas recibidas y guardadas.',
+            'unavailable': 'No se pudo conectar. Revisa la terminal.',
+        }
+        self.status.set_state(state, messages[state])

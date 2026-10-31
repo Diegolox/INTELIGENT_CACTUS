@@ -1,37 +1,23 @@
-"""Edita aquí los textos y las funciones de los dos botones.
-
-Cada función recibe app, la aplicación abierta. Puedes llamar a tus funciones,
-actualizar app.values o consultar sus lecturas. No crees otra App dentro de una
-acción. La pantalla se refresca automáticamente al terminar la función.
-"""
+"""Textos y funciones de los dos botones de la app."""
 
 
-def on_demo(app):
-    """Ejemplo: cargar los valores de demostración de interface_values.py."""
-    app.values.demo()
+def on_connect(app):
+    """Inicia o detiene el receptor del ESP32."""
+    app.toggle_connection()
 
 
 def on_clear(app):
-    """Ejemplo: vaciar las cinco lecturas."""
+    """Borra las lecturas de la pantalla, sin cerrar la conexion ni borrar archivos."""
     app.values.clear()
 
 
-# Mantén las claves demo y clear: identifican los dos lugares de la pantalla.
-# Puedes cambiar libremente el texto y la función asignada, sin paréntesis.
 BUTTONS = {
-    'demo': {
-        'text': 'Demo',
-        'action': on_demo,
-    },
-    'clear': {
-        'text': 'Limpiar',
-        'action': on_clear,
-    },
+    'connect': {'text': 'Conectar ESP32', 'action': on_connect},
+    'clear': {'text': 'Limpiar', 'action': on_clear},
 }
 
 
 def execute(button_id, app):
-    """Busca la acción al pulsar, para permitir reasignarla también en ejecución."""
     action = BUTTONS[button_id]['action']
     if not callable(action):
         raise TypeError(f'La acción de {button_id} debe ser una función, sin paréntesis.')

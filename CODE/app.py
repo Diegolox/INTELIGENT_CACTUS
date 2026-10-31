@@ -30,9 +30,10 @@ class App(ctk.CTk):
         self.values = interface_values if values is None else values
         self._last_values_version = -1
         self.connection_events=Queue()
+        self.receiver_monitor = None
         self.view=MainView(
             self,
-            lambda: self.run_button_action('demo'),
+            lambda: self.run_button_action('connect'),
             lambda: self.run_button_action('clear'),
             button_texts={key: item['text'] for key, item in button_actions.BUTTONS.items()},
         )
@@ -44,13 +45,34 @@ class App(ctk.CTk):
         self.geometry(f'+{x}+{y}')
         self.protocol('WM_DELETE_WINDOW',self.close)
         self._poll_id=self.after(150,self._poll)
-        self.receiver_monitor = ReceiverMonitor(self.connection_events.put)
-        self.receiver_monitor.start()
     def run_button_action(self, button_id):
         try:
             return button_actions.execute(button_id, self)
         finally:
             self._render_values()
+
+    def toggle_connection(self):
+        """Conectar abre la escucha TCP; el ESP32 es quien se conecta al PC."""
+        if self.receiver_monitor is not None:
+            self.receiver_monitor.stop()
+            self.receiver_monitor = None
+            self._clear_connection_events()
+            self.view.set_connection_state('disconnected', active=False)
+            return
+
+        self._clear_connection_events()
+        self.receiver_monitor = ReceiverMonitor(
+            self.connection_events.put, self.submit_readings)
+        self.view.set_connection_state('waiting', active=True)
+        self.receiver_monitor.start()
+
+    def _clear_connection_events(self):
+        # Evita mostrar estados antiguos tras desconectar o volver a conectar.
+        while True:
+            try:
+                self.connection_events.get_nowait()
+            except Empty:
+                break
 
     def submit_readings(self, values):
         """Compatibilidad con el receptor: un paquete reemplaza la lectura completa."""
@@ -75,7 +97,10 @@ class App(ctk.CTk):
             except Empty:
                 break
         if state is not None:
-            self.view.status.set_state(state)
+            if state == 'unavailable' and self.receiver_monitor is not None:
+                self.receiver_monitor.stop()
+                self.receiver_monitor = None
+            self.view.set_connection_state(state, active=self.receiver_monitor is not None)
         self._render_values()
         self._poll_id=self.after(150,self._poll)
 
@@ -89,5 +114,6 @@ class App(ctk.CTk):
 
     def close(self):
         self.after_cancel(self._poll_id)
-        self.receiver_monitor.stop()
+        if self.receiver_monitor is not None:
+            self.receiver_monitor.stop()
         self.destroy()
