@@ -8,7 +8,7 @@
 
 ## La aplicación
 
-<p align="justify">La interfaz está desarrollada en <strong>Python con CustomTkinter, basado en Tkinter</strong>. Muestra temperatura ambiente y del suelo, humedad ambiente y del suelo, iluminación y la hora de la última medida.</p>
+<p align="justify">La interfaz está desarrollada en <strong>Python con CustomTkinter</strong>. Muestra temperatura ambiente y del suelo, humedad ambiente y del suelo, iluminación y la hora de la última medida.</p>
 
 - **Conectar ESP32 / Desconectar:** activa o detiene el receptor. Al aceptar la conexión del ESP32, la app lo detecta y actualiza el indicador.
 - **Círculo y aviso:** amarillo en espera, verde conectado y rojo desconectado o con error.
