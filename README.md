@@ -1,45 +1,89 @@
 # Inteligent Cactus
 
-Aplicación para recibir por Wi-Fi las medidas de un ESP32, mostrarlas en pantalla y guardarlas en archivos JSON.
+<p align="justify">Aplicación de escritorio para recibir medidas de un ESP32 por Wi-Fi, mostrarlas y guardarlas en JSON. Actualmente los datos son <strong>simulados</strong> y varían ligeramente cada dos segundos.</p>
 
-<img src="assets/captura-app.png" alt="Aplicación Inteligent Cactus con medidas simuladas" width="420">
+<p align="center">
+  <img src="assets/captura-app.png" alt="Inteligent Cactus con medidas simuladas" width="420">
+</p>
 
-**Actualmente las medidas son simuladas** y cambian ligeramente cada dos segundos.
+## La aplicación
 
-## Funcionamiento
+<p align="justify">La interfaz está desarrollada en <strong>Python con CustomTkinter, basado en Tkinter</strong>. Muestra temperatura ambiente y del suelo, humedad ambiente y del suelo, iluminación y la hora de la última medida.</p>
 
-1. El PC crea una red Wi-Fi mediante su punto de acceso.
-2. El ESP32 se conecta a esa red.
-3. En la app, **Conectar ESP32** inicia el receptor TCP en el puerto `5000`.
-4. El ESP32 envía las cinco medidas en un JSON:
+- **Conectar ESP32 / Desconectar:** activa o detiene el receptor. Al aceptar la conexión del ESP32, la app lo detecta y actualiza el indicador.
+- **Círculo y aviso:** amarillo en espera, verde conectado y rojo desconectado o con error.
+- **Limpiar:** vacía la pantalla sin desconectar ni borrar los archivos guardados.
+- **Guardado automático:** crea un JSON por medida en `medidas/`, con fecha y hora.
+
+<p align="justify">La recepción funciona en segundo plano para mantener la ventana disponible. La app muestra por terminal las conexiones, los datos recibidos y los archivos guardados.</p>
+
+## Funcionamiento y esquemas
+
+<p align="justify">El PC crea un punto de acceso Wi-Fi y el ESP32 se une a esa red. Al pulsar <strong>Conectar ESP32</strong>, el PC empieza a escuchar en el puerto TCP <code>5000</code>; el ESP32 inicia la conexión y envía un JSON por línea.</p>
 
 ```json
 {"ta":24.3,"ts":21.8,"ha":60.5,"hs":35.2,"luz":123456}
 ```
 
-`ta` y `ts`: temperatura ambiente y del suelo (°C).
-`ha` y `hs`: humedad ambiente y del suelo (%).
-`luz`: iluminación simulada (lx).
+<p align="justify"><code>ta</code> y <code>ts</code> son temperaturas (°C); <code>ha</code> y <code>hs</code>, humedades (%); <code>luz</code>, iluminación simulada (lx).</p>
 
-Cada medida se guarda en `medidas/` con fecha y hora. El círculo indica: amarillo en espera, verde conectado y rojo desconectado o error.
+### Arquitectura de la app
 
-## Ejecutar
+<!-- Sustituir este recuadro por la imagen exportada de Canva. -->
+<table>
+<tr><td align="center" width="660">
+<br><br>
+<strong>Espacio reservado para el esquema de arquitectura</strong>
+<br><br><br>
+</td></tr>
+</table>
 
-- Cargar `ESP32_INTELIGENT_CACTUS` con PlatformIO, configurando Wi-Fi, contraseña e IP del PC en `src/main.cpp`.
-- Activar el punto de acceso Wi-Fi del PC.
-- Desde la carpeta del proyecto:
+### Conexión Wi-Fi
 
-```sh
-python -m pip install -r CODE/requirements.txt
-python CODE/main.py
+<!-- Sustituir este recuadro por la imagen exportada de Canva. -->
+<table>
+<tr><td align="center" width="660">
+<br><br>
+<strong>Espacio reservado para el esquema de conexión Wi-Fi</strong>
+<br><br><br>
+</td></tr>
+</table>
+
+## Software necesario
+
+- **Python 3.11**, versión utilizada en el proyecto.
+- **CustomTkinter y Pillow**, dependencias de la interfaz recogidas en `CODE/requirements.txt`.
+- **PlatformIO con framework Arduino y ArduinoJson 7**, para compilar y cargar el programa del ESP32.
+
+## Hardware necesario
+
+- **ESP32 WROOM**, compatible con la placa configurada en `platformio.ini`.
+- **Adaptador Wi-Fi del PC con punto de acceso en 2,4 GHz**, compatible con el ESP32.
+
+<p align="justify">La versión actual permite probar todo sin sensores físicos. Para medir valores reales hay que conectar los sensores y sustituir los valores simulados de <code>generarMedida()</code>.</p>
+
+## Un poco de código
+
+<p align="justify">En el ESP32, <code>initWifi()</code> conecta a la red, <code>generarMedida()</code> crea los datos y <code>enviarMedida()</code> los transmite. En Python, <code>receiver_monitor.py</code> entrega las lecturas a <code>submit_readings()</code> para actualizar la pantalla.</p>
+
+<details>
+<summary>Ver Python: interpretar y guardar una medida</summary>
+
+Fragmento de `recibir.py`, ejecutado por cada línea recibida:
+
+```python
+# Convertir el JSON recibido en un diccionario de Python.
+datos = json.loads(linea)
+
+# Crear un nombre distinto para cada medida.
+nombre = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f.json")
+archivo = carpeta / nombre
+
+# Guardar los datos en un archivo JSON legible.
+with archivo.open("x", encoding="utf-8") as fichero:
+    json.dump(datos, fichero, indent=4, ensure_ascii=False)
 ```
 
-Pulsar **Conectar ESP32**. **Desconectar** cierra el receptor; **Limpiar** borra solo las lecturas de la pantalla.
+<p align="justify"><code>json.loads()</code> interpreta el mensaje y <code>json.dump()</code> escribe sus datos en el archivo. La carpeta <code>medidas/</code> se crea automáticamente junto al receptor.</p>
 
-## Código principal
-
-- **ESP32 — `main.cpp`:** `initWifi()` conecta a la red, `generarMedida()` crea los valores y `enviarMedida()` envía el JSON. `delay(2000)` separa los envíos dos segundos.
-- **PC — `recibir.py`:** lee un JSON por línea; `json.loads()` interpreta los datos y `json.dump()` los guarda.
-- **App — `CODE/`:** `receiver_monitor.py` pasa las medidas a `submit_readings()`, y la interfaz actualiza las cinco lecturas.
-
-Para usar sensores reales, se sustituye el contenido de `generarMedida()` por sus lecturas.
+</details>
